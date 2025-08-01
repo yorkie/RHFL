@@ -104,7 +104,7 @@
     
     .content {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 3fr 7fr;
       gap: 24px;
       padding: 24px;
     }
@@ -141,7 +141,7 @@
     
     textarea#response {
       width: 100%;
-      min-height: 300px;
+      height: 400px;
       font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
       font-size: 13px;
       line-height: 1.6;
@@ -149,7 +149,8 @@
       border: 2px solid #e2e8f0;
       border-radius: 8px;
       background-color: #f8fafc;
-      resize: vertical;
+      resize: none;
+      overflow-y: auto;
       transition: all 0.2s ease;
     }
     
@@ -274,6 +275,22 @@
     const startBtn = document.getElementById('startBtn');
     const apiKeyInput = document.getElementById('apiKey');
     
+    // Load API key from localStorage on page load
+    const savedApiKey = localStorage.getItem('rhfl-api-key');
+    if (savedApiKey) {
+      apiKeyInput.value = savedApiKey;
+    }
+    
+    // Save API key to localStorage when it changes
+    apiKeyInput.addEventListener('input', () => {
+      const apiKey = apiKeyInput.value.trim();
+      if (apiKey) {
+        localStorage.setItem('rhfl-api-key', apiKey);
+      } else {
+        localStorage.removeItem('rhfl-api-key');
+      }
+    });
+    
     startBtn.addEventListener('click', () => {
       const apiKey = apiKeyInput.value.trim();
       if (!apiKey) {
@@ -281,6 +298,9 @@
         apiKeyInput.focus();
         return;
       }
+      
+      // Save API key to localStorage
+      localStorage.setItem('rhfl-api-key', apiKey);
       
       // Add loading state
       document.body.classList.add('loading');
