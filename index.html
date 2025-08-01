@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test RHFL(Render HTML For LLMs)</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+    }
+    textarea#response {
+      width: calc(100vw - 40px);
+      min-height: 200px;
+      font-family: monospace;
+      box-sizing: border-box;
+      margin: 10px 0;
+      padding: 10px;
+      border: 0;
+      background-color: rgb(246, 243, 238);
+    }
+    #app {
+      width: calc(100vw - 40px);
+      min-height: 200px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      box-sizing: border-box;
+      background-color: rgb(246, 243, 238);
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <p>
+      <span>API Key:</span>
+      <input type="text" id="apiKey" >
+    </p>
+    <button>Start</button>
+  </div>
+  <div>
+    <textarea id="response"></textarea>
+  </div>
+  <div id="app"></div>
+  <script type="module">
+    import { sendCompletions } from './lib/rhfl.js';
+
+    document.querySelector('button').addEventListener('click', () => {
+      sendCompletions();
+    });
+  </script>
+</body>

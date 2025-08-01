@@ -1,0 +1,11 @@
+{
+  "name": "@yodaos-jsar/rhfl",
+  "version": "1.0.0",
+  "description": "Render HTML for LLMs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
