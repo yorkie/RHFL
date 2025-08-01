@@ -1,11 +1,30 @@
 {
   "name": "@yodaos-jsar/rhfl",
   "version": "1.0.0",
-  "description": "Render HTML for LLMs",
-  "main": "index.js",
+  "description": "An innovative system that enables LLMs to generate structured GUI components in real-time using S-expressions, bridging the gap between AI text generation and interactive user interfaces.",
+  "main": "lib/rhfl.js",
   "scripts": {
+    "start": "python3 -m http.server 8000",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC"
+  "keywords": [
+    "llm",
+    "html",
+    "gui",
+    "s-expressions",
+    "real-time",
+    "streaming",
+    "ui-generation",
+    "artificial-intelligence"
+  ],
+  "author": "yorkie",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yorkie/RHFL.git"
+  },
+  "homepage": "https://github.com/yorkie/RHFL#readme",
+  "bugs": {
+    "url": "https://github.com/yorkie/RHFL/issues"
+  }
 }
