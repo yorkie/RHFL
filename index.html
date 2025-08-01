@@ -6,48 +6,417 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Test RHFL(Render HTML For LLMs)</title>
   <style>
-    body {
+    * {
       margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+      min-height: 100vh;
       padding: 20px;
+      color: #f1f5f9;
     }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      padding: 24px;
+      color: white;
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .header p {
+      opacity: 0.9;
+      font-size: 16px;
+    }
+    
+    .controls {
+      padding: 24px;
+      background: #1e293b;
+      border-bottom: 1px solid #475569;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+    
+    .input-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .prompt-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+    }
+
+    .status-dot.generating {
+      background: #f59e0b;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .input-group label {
+      font-weight: 600;
+      color: #e2e8f0;
+      font-size: 14px;
+    }
+    
+    .input-group input {
+      flex: 1;
+      min-width: 300px;
+      padding: 12px 16px;
+      border: 2px solid #475569;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #334155;
+      color: #f1f5f9;
+      transition: all 0.2s ease;
+    }
+    
+    .input-group input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .input-group input::placeholder {
+      color: #94a3b8;
+    }
+    
+    .start-button {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 140px;
+    }
+    
+    .start-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+    }
+    
+    .start-button:active {
+      transform: translateY(0);
+    }
+    
+    .content {
+      display: grid;
+      grid-template-columns: 3fr 7fr;
+      gap: 24px;
+      padding: 24px;
+    }
+    
+    .panel {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .panel-header {
+      font-size: 16px;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .panel-header::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      border-radius: 2px;
+    }
+    
+    .code-panel .panel-header::before {
+      background: #10b981;
+    }
+    
+    .preview-panel .panel-header::before {
+      background: #3b82f6;
+    }
+    
     textarea#response {
-      width: calc(100vw - 40px);
-      min-height: 200px;
-      font-family: monospace;
-      box-sizing: border-box;
-      margin: 10px 0;
-      padding: 10px;
-      border: 0;
-      background-color: rgb(246, 243, 238);
+      width: 100%;
+      height: 400px;
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      padding: 16px;
+      border: 2px solid #475569;
+      border-radius: 8px;
+      background-color: #1e293b;
+      color: #e2e8f0;
+      resize: none;
+      overflow-y: auto;
+      transition: all 0.2s ease;
     }
+    
+    textarea#response:focus {
+      outline: none;
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+    
+    textarea#response::placeholder {
+      color: #64748b;
+    }
+    
     #app {
-      width: calc(100vw - 40px);
-      min-height: 200px;
-      border: 1px solid #ccc;
-      padding: 10px;
-      box-sizing: border-box;
-      background-color: rgb(246, 243, 238);
+      width: 100%;
+      height: 400px;
+      border: 2px solid #475569;
+      border-radius: 8px;
+      padding: 16px;
+      background-color: #0f172a;
+      overflow: auto;
+    }
+    
+    @media (max-width: 768px) {
+      .content {
+        grid-template-columns: 1fr;
+      }
+      
+      .input-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .prompt-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .input-group input {
+        min-width: 100%;
+      }
+      
+      body {
+        padding: 12px;
+      }
+      
+      .header {
+        padding: 20px;
+      }
+      
+      .header h1 {
+        font-size: 24px;
+      }
+      
+      .controls, .content {
+        padding: 20px;
+      }
+    }
+    
+    /* Loading state */
+    .loading .start-button {
+      background: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .loading .start-button:hover {
+      transform: none;
+      box-shadow: none;
+    }
+    
+    /* Empty state styling */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #64748b;
+      font-size: 14px;
+    }
+    
+    .empty-state::before {
+      content: '📱';
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
     }
   </style>
 </head>
 
 <body>
-  <div>
-    <p>
-      <span>API Key:</span>
-      <input type="text" id="apiKey" >
-    </p>
-    <button>Start</button>
+  <div class="container">
+    <div class="header">
+      <h1>RHFL - Render HTML For LLMs</h1>
+      <p>Stream and render S-expressions in real-time with optimized tree structure</p>
+    </div>
+    
+    <div class="controls">
+      <div class="form-group">
+        <div class="input-group">
+          <label for="apiKey">API Key:</label>
+          <input type="password" id="apiKey" placeholder="Enter your API key here...">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <div class="input-group">
+          <label for="promptInput">Prompt:</label>
+          <input type="text" id="promptInput" placeholder="Enter your prompt here..." value="生成一个简单计算器键盘，不需要带输入框">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <div class="prompt-controls">
+          <button class="start-button" id="startBtn">Start Generation</button>
+          <div class="status-indicator" id="statusIndicator">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Ready</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="content">
+      <div class="panel">
+        <div class="panel-header code-panel">
+          <span>S-Expression Output</span>
+        </div>
+        <textarea id="response" placeholder="Generated S-expressions will appear here..."></textarea>
+      </div>
+      
+      <div class="panel">
+        <div class="panel-header preview-panel">
+          <span>Live Preview</span>
+        </div>
+        <div id="app">
+          <div class="empty-state">
+            Start generation to see the preview
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  <div>
-    <textarea id="response"></textarea>
-  </div>
-  <div id="app"></div>
+  
   <script type="module">
     import { sendCompletions } from './lib/rhfl.js';
 
-    document.querySelector('button').addEventListener('click', () => {
-      sendCompletions();
+    const startBtn = document.getElementById('startBtn');
+    const apiKeyInput = document.getElementById('apiKey');
+    const promptInput = document.getElementById('promptInput');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    
+    function updateStatus(status, text) {
+      statusDot.className = status === 'ready' ? 'status-dot' : 'status-dot generating';
+      statusText.textContent = text;
+    }
+    
+    // Load API key from localStorage on page load
+    const savedApiKey = localStorage.getItem('rhfl-api-key');
+    if (savedApiKey) {
+      apiKeyInput.value = savedApiKey;
+    }
+    
+    // Save API key to localStorage when it changes
+    apiKeyInput.addEventListener('input', () => {
+      const apiKey = apiKeyInput.value.trim();
+      if (apiKey) {
+        localStorage.setItem('rhfl-api-key', apiKey);
+      } else {
+        localStorage.removeItem('rhfl-api-key');
+      }
+    });
+    
+    startBtn.addEventListener('click', () => {
+      const apiKey = apiKeyInput.value.trim();
+      const prompt = promptInput.value.trim();
+      
+      if (!apiKey) {
+        alert('Please enter your API key first');
+        apiKeyInput.focus();
+        return;
+      }
+      
+      if (!prompt) {
+        alert('Please enter a prompt');
+        promptInput.focus();
+        return;
+      }
+      
+      // Save API key to localStorage
+      localStorage.setItem('rhfl-api-key', apiKey);
+      
+      // Update status to generating
+      updateStatus('generating', 'Generating...');
+      startBtn.disabled = true;
+      
+      sendCompletions(prompt).finally(() => {
+        // Update status back to ready
+        updateStatus('ready', 'Complete');
+        startBtn.disabled = false;
+        
+        // Reset to ready after 2 seconds
+        setTimeout(() => {
+          updateStatus('ready', 'Ready');
+        }, 2000);
+      });
+    });
+    
+    // Enter key support for inputs
+    [apiKeyInput, promptInput].forEach(input => {
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          startBtn.click();
+        }
+      });
     });
   </script>
 </body>
