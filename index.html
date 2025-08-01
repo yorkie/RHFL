@@ -50,12 +50,52 @@
       background: #f8fafc;
       border-bottom: 1px solid #e2e8f0;
     }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
     
     .input-group {
       display: flex;
       gap: 12px;
       align-items: center;
       flex-wrap: wrap;
+    }
+
+    .prompt-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+    }
+
+    .status-dot.generating {
+      background: #f59e0b;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
     }
     
     .input-group label {
@@ -90,7 +130,7 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
-      min-width: 100px;
+      width: 140px;
     }
     
     .start-button:hover {
@@ -180,6 +220,11 @@
         align-items: stretch;
       }
       
+      .prompt-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
       .input-group input {
         min-width: 100%;
       }
@@ -241,10 +286,28 @@
     </div>
     
     <div class="controls">
-      <div class="input-group">
-        <label for="apiKey">API Key:</label>
-        <input type="password" id="apiKey" placeholder="Enter your API key here...">
-        <button class="start-button" id="startBtn">Start Generation</button>
+      <div class="form-group">
+        <div class="input-group">
+          <label for="apiKey">API Key:</label>
+          <input type="password" id="apiKey" placeholder="Enter your API key here...">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <div class="input-group">
+          <label for="promptInput">Prompt:</label>
+          <input type="text" id="promptInput" placeholder="Enter your prompt here..." value="生成一个简单计算器键盘，不需要带输入框">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <div class="prompt-controls">
+          <button class="start-button" id="startBtn">Start Generation</button>
+          <div class="status-indicator" id="statusIndicator">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Ready</span>
+          </div>
+        </div>
       </div>
     </div>
     
@@ -274,6 +337,14 @@
 
     const startBtn = document.getElementById('startBtn');
     const apiKeyInput = document.getElementById('apiKey');
+    const promptInput = document.getElementById('promptInput');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    
+    function updateStatus(status, text) {
+      statusDot.className = status === 'ready' ? 'status-dot' : 'status-dot generating';
+      statusText.textContent = text;
+    }
     
     // Load API key from localStorage on page load
     const savedApiKey = localStorage.getItem('rhfl-api-key');
@@ -293,33 +364,46 @@
     
     startBtn.addEventListener('click', () => {
       const apiKey = apiKeyInput.value.trim();
+      const prompt = promptInput.value.trim();
+      
       if (!apiKey) {
         alert('Please enter your API key first');
         apiKeyInput.focus();
         return;
       }
       
+      if (!prompt) {
+        alert('Please enter a prompt');
+        promptInput.focus();
+        return;
+      }
+      
       // Save API key to localStorage
       localStorage.setItem('rhfl-api-key', apiKey);
       
-      // Add loading state
-      document.body.classList.add('loading');
-      startBtn.textContent = 'Generating...';
+      // Update status to generating
+      updateStatus('generating', 'Generating...');
       startBtn.disabled = true;
       
-      sendCompletions().finally(() => {
-        // Remove loading state
-        document.body.classList.remove('loading');
-        startBtn.textContent = 'Start Generation';
+      sendCompletions(prompt).finally(() => {
+        // Update status back to ready
+        updateStatus('ready', 'Complete');
         startBtn.disabled = false;
+        
+        // Reset to ready after 2 seconds
+        setTimeout(() => {
+          updateStatus('ready', 'Ready');
+        }, 2000);
       });
     });
     
-    // Enter key support for API key input
-    apiKeyInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        startBtn.click();
-      }
+    // Enter key support for inputs
+    [apiKeyInput, promptInput].forEach(input => {
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          startBtn.click();
+        }
+      });
     });
   </script>
 </body>
