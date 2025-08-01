@@ -1,6 +1,7 @@
 {
   "name": "@yodaos-jsar/rhfl",
   "version": "1.0.0",
+  "type": "module",
   "description": "An innovative system that enables LLMs to generate structured GUI components in real-time using S-expressions, bridging the gap between AI text generation and interactive user interfaces.",
   "main": "lib/rhfl.js",
   "scripts": {
